@@ -2,7 +2,8 @@ import tensorflow as tf
 
 from layer_utils import get_deconv2d_output_dims
 
-def conv(input, name, filter_dims, stride_dims, padding='SAME', relu=True):
+def conv(input, name, filter_dims, stride_dims, padding='SAME',
+         non_linear_fn=tf.nn.relu):
     input_dims = input.get_shape().as_list()
     assert(len(input_dims) == 4) # batch_size, height, width, num_channels_in
     assert(len(filter_dims) == 3) # height, width and num_channels out
@@ -23,12 +24,13 @@ def conv(input, name, filter_dims, stride_dims, padding='SAME', relu=True):
                            [1, stride_h, stride_w, 1],
                            padding=padding)
         out = tf.nn.bias_add(out, biases)
-        if relu:
-            return tf.nn.relu(out, name=scope.name)
+        if non_linear_fn:
+            return non_linear_fn(out, name=scope.name)
         else:
             return out
 
-def deconv(input, name, filter_dims, stride_dims, padding='SAME', sigmoid=True):
+def deconv(input, name, filter_dims, stride_dims, padding='SAME',
+           non_linear_fn=tf.nn.relu):
     input_dims = input.get_shape().as_list()
     assert(len(input_dims) == 4) # batch_size, height, width, num_channels_in
     assert(len(filter_dims) == 3) # height, width and num_channels out
@@ -55,12 +57,12 @@ def deconv(input, name, filter_dims, stride_dims, padding='SAME', sigmoid=True):
                                      [1, stride_h, stride_w, 1],
                                      padding=padding)
         out = tf.nn.bias_add(out, biases)
-        if sigmoid:
-            return tf.sigmoid(out, name=scope.name)
+        if non_linear_fn:
+            return non_linear_fn(out, name=scope.name)
         else:
             return out
 
-def fc(input, name, out_dim, relu=True):
+def fc(input, name, out_dim, non_linear_fn=tf.nn.relu):
     assert(type(out_dim) == int)
 
     with tf.variable_scope(name) as scope:
@@ -78,10 +80,11 @@ def fc(input, name, out_dim, relu=True):
 
         weights = tf.get_variable('weights', [in_dim, out_dim])
         biases = tf.get_variable('biases', [out_dim])
-        if relu:
-            return tf.nn.relu_layer(flat_input, weights, biases, name=scope.name)
+        out = tf.nn.xw_plus_b(flat_input, weights, biases)
+        if non_linear_fn:
+            return non_linear_fn(out, name=scope.name)
         else:
-            return tf.nn.xw_plus_b(flat_input, weights, biases, name=scope.name)
+            return out
 
 def max_pool(input, name, filter_dims, stride_dims, padding='SAME'):
     assert(len(filter_dims) == 2) # filter height and width
