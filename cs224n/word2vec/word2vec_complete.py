@@ -60,6 +60,8 @@ def skipgram():
                                                    stddev=1.0/math.sqrt(embedding_size)))
         biases = tf.Variable(tf.zeros([vocabulary_size]))
 
+        # This objective is maximized when the model assigns high probabilities
+        # to the real words, and low probabilities to noise words.
         loss = tf.reduce_mean(tf.nn.nce_loss(weights=weights, 
                                              biases=biases,
                                              labels=batch_labels,
@@ -67,7 +69,6 @@ def skipgram():
                                              num_sampled=num_sampled,
                                              num_classes=vocabulary_size))
 
-        optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(loss)
 
         norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True))
         normalized_embeddings = embeddings/norm
@@ -77,11 +78,12 @@ def skipgram():
         similarity = tf.matmul(val_embeddings, 
                                normalized_embeddings, transpose_b=True)
 
-    return batch_inputs, batch_labels, normalized_embeddings, optimizer, loss, similarity
+    return batch_inputs, batch_labels, normalized_embeddings, similarity, loss
 
 def run():
     # load model
-    batch_inputs, batch_labels, normalized_embeddings, optimizer, loss, similarity = skipgram()
+    batch_inputs, batch_labels, normalized_embeddings, similarity, loss = skipgram()
+    optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(loss)
 
     init = tf.global_variables_initializer()
     with tf.Session() as session:
