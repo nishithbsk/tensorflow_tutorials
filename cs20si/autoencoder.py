@@ -19,11 +19,11 @@ def decoder(input):
     fc_dec = fc(input, 'fc_dec', 7*7*512)
     fc_dec_reshaped = tf.reshape(fc_dec, [batch_size,
                                           7, 7, 512])
-    deconv1 = deconv(fc1, [3, 3, 256], [2, 2])
-    deconv2 = deconv(deconv1, [3, 3, 128], [2, 2])
-    deconv3 = deconv(deconv2, [3, 3, 64], [2, 2])
-    deconv4 = deconv(deconv3, [5, 5, 32], [2, 2])
-    deconv5 = deconv(deconv4, [5, 5, 3], [2, 2], non_linear_fn=tf.sigmoid)
+    deconv1 = deconv(fc1, 'deconv1', [3, 3, 256], [2, 2])
+    deconv2 = deconv(deconv1, 'deconv2', [3, 3, 128], [2, 2])
+    deconv3 = deconv(deconv2, 'deconv3', [3, 3, 64], [2, 2])
+    deconv4 = deconv(deconv3, 'deconv4', [5, 5, 32], [2, 2])
+    deconv5 = deconv(deconv4, 'deconv5', [5, 5, 3], [2, 2], non_linear_fn=tf.sigmoid)
     return deconv5
 
 def autoencoder():
