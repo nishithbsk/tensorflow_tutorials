@@ -3,7 +3,7 @@ import tensorflow as tf
 from layers import *
 
 def encoder(input):
-    input_reshaped = tf.reshape(input, [batch_size,
+    input_reshaped = tf.reshape(input, [None,
                                         image_dims[0],
                                         image_dims[1],
                                         image_dims[2]])
@@ -17,7 +17,7 @@ def encoder(input):
 
 def decoder(input):
     fc_dec = fc(input, 'fc_dec', 7*7*512)
-    fc_dec_reshaped = tf.reshape(fc_dec, [batch_size,
+    fc_dec_reshaped = tf.reshape(fc_dec, [None,
                                           7, 7, 512])
     deconv1 = deconv(fc1, 'deconv1', [3, 3, 256], [2, 2])
     deconv2 = deconv(deconv1, 'deconv2', [3, 3, 128], [2, 2])
@@ -28,7 +28,7 @@ def decoder(input):
 
 def autoencoder():
     input_image = tf.placeholder(tf.float32,
-                                 [batch_size,
+                                 [None,
                                   image_dims[0],
                                   image_dims[1],
                                   image_dims[2]], name='input_image')
