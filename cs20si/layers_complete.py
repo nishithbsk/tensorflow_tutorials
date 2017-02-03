@@ -13,18 +13,21 @@ def conv(input, name, filter_dims, stride_dims, padding='SAME',
     filter_h, filter_w, num_channels_out = filter_dims
     stride_h, stride_w = stride_dims
 
-    # Define a variable scope for the conv layer
     with tf.variable_scope(name) as scope:
-        # Create filter weight variable
-        
-        # Create bias variable
-        
-        # Define the convolution flow graph
-        
-        # Add bias to conv output
-        
-        # Apply non-linearity (if asked) and return output
-        pass
+        weights = tf.get_variable('weights', [filter_h,
+                                              filter_w,
+                                              num_channels_in,
+                                              num_channels_out])
+        biases = tf.get_variable('biases', [num_channels_out])
+        out = tf.nn.conv2d(input,
+                           weights,
+                           [1, stride_h, stride_w, 1],
+                           padding=padding)
+        out = tf.nn.bias_add(out, biases)
+        if non_linear_fn:
+            return non_linear_fn(out, name=scope.name)
+        else:
+            return out
 
 def deconv(input, name, filter_dims, stride_dims, padding='SAME',
            non_linear_fn=tf.nn.relu):
@@ -36,25 +39,28 @@ def deconv(input, name, filter_dims, stride_dims, padding='SAME',
     num_channels_in = input_dims[-1]
     filter_h, filter_w, num_channels_out = filter_dims
     stride_h, stride_w = stride_dims
-    # Let's step into this function
     output_dims = get_deconv2d_output_dims(input_dims,
                                            filter_dims,
                                            stride_dims,
                                            padding)
 
-    # Define a variable scope for the deconv layer
     with tf.variable_scope(name) as scope:
-        # Create filter weight variable
-        # Note that num_channels_out and in positions are flipped for deconv.
-        
-        # Create bias variable
-        
-        # Define the deconv flow graph
-        
-        # Add bias to deconv output
-        
-        # Apply non-linearity (if asked) and return output
-        pass
+        # note that num_channels_out and in positions are flipped for deconv.
+        weights = tf.get_variable('weights', [filter_h,
+                                              filter_w,
+                                              num_channels_out,
+                                              num_channels_in])
+        biases = tf.get_variable('biases', [num_channels_out])
+        out = tf.nn.conv2d_transpose(input,
+                                     weights,
+                                     output_dims,
+                                     [1, stride_h, stride_w, 1],
+                                     padding=padding)
+        out = tf.nn.bias_add(out, biases)
+        if non_linear_fn:
+            return non_linear_fn(out, name=scope.name)
+        else:
+            return out
 
 def max_pool(input, name, filter_dims, stride_dims, padding='SAME'):
     assert(len(filter_dims) == 2) # filter height and width
@@ -62,14 +68,14 @@ def max_pool(input, name, filter_dims, stride_dims, padding='SAME'):
 
     filter_h, filter_w = filter_dims
     stride_h, stride_w = stride_dims
-    
-    # Define the max pool flow graph and return output
-    pass
+    return tf.nn.max_pool(input, 
+                          [1, filter_h, filter_w, 1],
+                          [1, stride_h, stride_w, 1],
+                          padding=padding)
 
 def fc(input, name, out_dim, non_linear_fn=tf.nn.relu):
     assert(type(out_dim) == int)
 
-    # Define a variable scope for the FC layer
     with tf.variable_scope(name) as scope:
         input_dims = input.get_shape().as_list()
         # the input to the fc layer should be flattened
@@ -83,11 +89,11 @@ def fc(input, name, out_dim, non_linear_fn=tf.nn.relu):
             in_dim = input_dims[-1]
             flat_input = input
 
-        # Create weight variable
-        
-        # Create bias variable
-        
-        # Define FC flow graph
-        
-        # Apply non-linearity (if asked) and return output
-        pass
+        weights = tf.get_variable('weights', [in_dim, out_dim])
+        biases = tf.get_variable('biases', [out_dim])
+        out = tf.nn.xw_plus_b(flat_input, weights, biases)
+        if non_linear_fn:
+            return non_linear_fn(out, name=scope.name)
+        else:
+            return out
+
