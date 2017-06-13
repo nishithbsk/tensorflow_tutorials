@@ -33,7 +33,7 @@ def linear_regression():
     
     with tf.variable_scope('lreg') as scope:
         w = tf.Variable(np.random.normal(), name="W")
-        y_pred = tf.mul(w, x)
+        y_pred = tf.multiply(w, x)
 
         loss = tf.reduce_mean(tf.square(y_pred - y))
     return x, y, y_pred, loss
@@ -52,7 +52,7 @@ def run():
         feed_dict = {x: x_batch, y: y_batch}
         for _ in range(30):
             loss_val, _ = session.run([loss, optimizer], feed_dict)
-            print("loss:", loss_val.mean())
+            print("loss:", loss_val)
 
         y_pred_batch = session.run(y_pred, {x: x_batch})
 
